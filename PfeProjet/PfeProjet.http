@@ -1,0 +1,6 @@
+@PfeProjet_HostAddress = http://localhost:5022
+
+GET {{PfeProjet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
