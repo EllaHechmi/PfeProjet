@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using PfeProjet.Controllers;
+using MongoDB.Driver;
+using PfeProjet;
+using Microsoft.Extensions.Options;
 
 internal class Program
 {
@@ -45,7 +48,23 @@ internal class Program
         {
             client.DefaultRequestHeaders.Add("Authorization", "Basic YOUR_ENCODED_TOKEN");
         });
-        
+        // Configuration de MongoDB
+        builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("ConnectionString"));
+        // Enregistrement de MongoDbContext
+        builder.Services.AddSingleton<MongoDbContext>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
+            // Vérifiez que settings.ConnectionString n'est pas null
+            if (string.IsNullOrEmpty(settings.ConnectionString))
+            {
+                throw new ArgumentNullException(nameof(settings.ConnectionString), "La chaîne de connexion MongoDB est manquante.");
+            }
+
+            var client = new MongoClient(settings.ConnectionString);
+            return new MongoDbContext(client, settings.DatabaseName);
+        });
+
 
         var app = builder.Build();
 

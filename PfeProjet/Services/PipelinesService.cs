@@ -1,4 +1,7 @@
-﻿using System.Net.Http.Headers;
+﻿using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
+using PfeProjet.Models;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace PfeProjet.Services
@@ -7,10 +10,14 @@ namespace PfeProjet.Services
     public class PipelinesService
     {
         private readonly HttpClient _httpClient;
+        private readonly IMongoCollection<Pipeline> _pipelinesCollection;
 
-        public PipelinesService(HttpClient httpClient) 
+
+        public PipelinesService(HttpClient httpClient, MongoDbContext mongoDbContext) 
         {
             _httpClient = httpClient;
+            _pipelinesCollection = mongoDbContext.Pipelines;
+
         }
 
         public async Task<string> GetPipelinesAsync(string organisation, string pat, string project)
@@ -34,15 +41,64 @@ namespace PfeProjet.Services
                 // Affichage de la réponse
                 Console.WriteLine($"Statut HTTP : {response.StatusCode}, Réponse : {responseContent}");
 
-                // Retourne le contenu si succès
-                return response.IsSuccessStatusCode
-                    ? responseContent
-                    : $"Erreur lors de la récupération des pipelines : {responseContent}";
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Désérialiser la réponse JSON
+                    var pipelines = ParsePipelinesResponse(responseContent, organisation, project);
+
+                    // Insérer les pipelines dans MongoDB
+                    await InsertPipelinesAsync(pipelines);
+
+                    return "Pipelines récupérés et stockés avec succès dans MongoDB.";
+                }
+                else
+                {
+                    return $"Erreur lors de la récupération des pipelines : {responseContent}";
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception : {ex.Message}");
                 return $"Erreur : {ex.Message}";
+            }
+        }
+
+        private List<Pipeline> ParsePipelinesResponse(string responseContent, string organisation, string project)
+        {
+            var pipelines = new List<Pipeline>();
+            var jsonResponse = JObject.Parse(responseContent);
+
+            // Parcourir les pipelines dans la réponse JSON
+            foreach (var item in jsonResponse["value"])
+            {
+                var pipeline = new Pipeline
+                {
+                    Id = item["id"].ToObject<int>(),              
+                    Name = item["name"].ToString(),            
+                    Url = item["url"].ToString(),                
+                    Folder = item["folder"]?.ToString(),          
+                    Project = project,                            
+                    Organization = organisation,                  
+                    CreatedDate = DateTime.UtcNow                 
+                };
+
+                pipelines.Add(pipeline);
+            }
+
+            return pipelines;
+        }
+
+        private async Task InsertPipelinesAsync(List<Pipeline> pipelines)
+        {
+            if (pipelines.Count > 0)
+            {
+                await _pipelinesCollection.InsertManyAsync(pipelines);
+                Console.WriteLine($"{pipelines.Count} pipelines insérés dans MongoDB.");
+            }
+            else
+            {
+                Console.WriteLine("Aucun pipeline à insérer.");
             }
         }
 
