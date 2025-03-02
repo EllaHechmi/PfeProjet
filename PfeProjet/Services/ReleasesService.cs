@@ -1,22 +1,23 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace PfeProjet.Services
 {
 
-    public class PipelinesService
+    public class ReleasesService
     {
         private readonly HttpClient _httpClient;
 
-        public PipelinesService(HttpClient httpClient) 
+        public ReleasesService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetPipelinesAsync(string organisation, string pat, string project)
+        public async Task<string> GetReleasesAsync(string organisation, string pat, string project)
         {
 
-            var apiUrl = $"https://dev.azure.com/{organisation}/{project}/_apis/pipelines?api-version=7.1";
+            var apiUrl = $"https://vsrm.dev.azure.com/{organisation}/{project}/_apis/release/releases?api-version=7.1";
 
             // Configuration de l'authentification et des en-têtes
             var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($":{pat}"));
@@ -26,7 +27,7 @@ namespace PfeProjet.Services
             try
             {
                 Console.WriteLine($"Envoi de la requête GET à : {apiUrl}");
-                 
+
                 // Envoi de la requête GET
                 var response = await _httpClient.GetAsync(apiUrl);
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -46,10 +47,10 @@ namespace PfeProjet.Services
             }
         }
 
-        public async Task<string> GetPipelineByIdAsync(string organisation, string pat, string project, int pipelineId)
+        public async Task<string> GetReleasesByIdAsync(string organisation, string pat, string project, int releasesId)
         {
-            // Corrected API URL to fetch a specific pipeline by its ID
-            var apiUrl = $"https://dev.azure.com/{organisation}/{project}/_apis/pipelines/{pipelineId}?api-version=7.1";
+            // Corrected API URL to fetch a specific  by its ID
+            var apiUrl = $"https://vsrm.dev.azure.com/{organisation}/{project}/_apis/release/releases/{releasesId}?api-version=7.1";
 
             // Configuration de l'authentification et des en-têtes
             var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($":{pat}"));
@@ -71,7 +72,7 @@ namespace PfeProjet.Services
                 // Return response content if successful
                 return response.IsSuccessStatusCode
                     ? responseContent
-                    : $"Error retrieving pipeline: {responseContent}";
+                    : $"Error retrieving releases: {responseContent}";
             }
             catch (Exception ex)
             {

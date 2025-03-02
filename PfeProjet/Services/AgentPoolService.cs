@@ -1,22 +1,28 @@
-﻿using System.Net.Http.Headers;
+﻿using PfeProjet.Models;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
-
+using System.Text.Json;
+using System.Threading.Tasks;
 namespace PfeProjet.Services
 {
-
-    public class PipelinesService
+    public class AgentPoolsService
     {
         private readonly HttpClient _httpClient;
 
-        public PipelinesService(HttpClient httpClient) 
+        public AgentPoolsService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetPipelinesAsync(string organisation, string pat, string project)
+
+
+
+        public async Task<string> GetAgentPoolAsync(string organisation, string pat,string project)
         {
 
-            var apiUrl = $"https://dev.azure.com/{organisation}/{project}/_apis/pipelines?api-version=7.1";
+            var apiUrl = $"https://dev.azure.com/{organisation}/_apis/distributedtask/pools?api-version=7.1";
 
             // Configuration de l'authentification et des en-têtes
             var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($":{pat}"));
@@ -26,7 +32,7 @@ namespace PfeProjet.Services
             try
             {
                 Console.WriteLine($"Envoi de la requête GET à : {apiUrl}");
-                 
+
                 // Envoi de la requête GET
                 var response = await _httpClient.GetAsync(apiUrl);
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -37,7 +43,7 @@ namespace PfeProjet.Services
                 // Retourne le contenu si succès
                 return response.IsSuccessStatusCode
                     ? responseContent
-                    : $"Erreur lors de la récupération des pipelines : {responseContent}";
+                    : $"Erreur lors de la récupération des projets : {responseContent}";
             }
             catch (Exception ex)
             {
@@ -46,10 +52,10 @@ namespace PfeProjet.Services
             }
         }
 
-        public async Task<string> GetPipelineByIdAsync(string organisation, string pat, string project, int pipelineId)
+        public async Task<string> GetAgentPoolByIdAsync(string organisation, string pat, string project, int AgentPoolId)
         {
-            // Corrected API URL to fetch a specific pipeline by its ID
-            var apiUrl = $"https://dev.azure.com/{organisation}/{project}/_apis/pipelines/{pipelineId}?api-version=7.1";
+            // Corrected API URL to fetch a specific AgentPool by its ID
+            var apiUrl = $"https://dev.azure.com/{organisation}/_apis/distributedtask/pools/{AgentPoolId}?api-version=7.1";
 
             // Configuration de l'authentification et des en-têtes
             var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($":{pat}"));
@@ -71,7 +77,7 @@ namespace PfeProjet.Services
                 // Return response content if successful
                 return response.IsSuccessStatusCode
                     ? responseContent
-                    : $"Error retrieving pipeline: {responseContent}";
+                    : $"Error retrieving AgentPool: {responseContent}";
             }
             catch (Exception ex)
             {

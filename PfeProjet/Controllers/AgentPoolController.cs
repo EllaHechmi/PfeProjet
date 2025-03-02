@@ -1,29 +1,30 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PfeProjet.Services;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+
 namespace PfeProjet.Controllers
 {
-    [Route("api/pipelines")]
+    [Route("api/agentpool")]
     [ApiController]
-    public class PipelinesController : ControllerBase
-    {
-        private readonly PipelinesService _pipelinesService;
-        public PipelinesController(PipelinesService pipelinesService)
-        {
-            _pipelinesService = pipelinesService;
+    public class AgentPoolController : ControllerBase { 
+    
+        private readonly AgentPoolsService _poolsService;
 
+        // Injecting the service class here, not the controller
+        public AgentPoolController(AgentPoolsService poolsService)
+        {
+            _poolsService = poolsService;
         }
 
-        [HttpGet("get-piplines")]
-        public async Task<IActionResult> GetPiplines([FromQuery] string organisation, [FromQuery] string pat, [FromQuery] string project)
+        [HttpGet("get-AgentPool")]
+        public async Task<IActionResult> GetAgentPool([FromQuery] string organisation, [FromQuery] string pat, [FromQuery] string project)
         {
             if (string.IsNullOrEmpty(organisation) || string.IsNullOrEmpty(pat) || string.IsNullOrEmpty(project))
             {
                 return BadRequest("L'organisation et le PAT sont requis.");
             }
 
-            var result = await _pipelinesService.GetPipelinesAsync(organisation, pat, project);
+            var result = await _poolsService.GetAgentPoolAsync(organisation, pat, project);
 
             if (result.Contains("Erreur"))
             {
@@ -35,18 +36,18 @@ namespace PfeProjet.Controllers
 
 
         [HttpGet("get-by-id")]
-        public async Task<IActionResult> GetPipelineById(
+        public async Task<IActionResult> GetAgentPoolById(
             [FromQuery] string organisation,
             [FromQuery] string pat,
             [FromQuery] string project,
-            [FromQuery] int pipelineId)
+            [FromQuery] int AgentPoolId)
         {
             if (string.IsNullOrEmpty(organisation) || string.IsNullOrEmpty(pat) || string.IsNullOrEmpty(project))
             {
                 return BadRequest("Organisation, PAT, and project are required.");
             }
 
-            var result = await _pipelinesService.GetPipelineByIdAsync(organisation, pat, project, pipelineId);
+            var result = await _poolsService.GetAgentPoolByIdAsync(organisation, pat, project, AgentPoolId);
 
             // Return the response
             if (!result.Contains("Error"))
@@ -54,7 +55,7 @@ namespace PfeProjet.Controllers
                 return Ok(result);
             }
 
-            return BadRequest(result); 
+            return BadRequest(result);
         }
 
 

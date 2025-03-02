@@ -36,7 +36,6 @@ namespace PfeProjet.Services
                 // Envoi de la requête GET
                 var response = await _httpClient.GetAsync(apiUrl);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                
 
                 // Affichage de la réponse
                 Console.WriteLine($"Statut HTTP : {response.StatusCode}, Réponse : {responseContent}");
