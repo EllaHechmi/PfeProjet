@@ -53,11 +53,8 @@ internal class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "azure devops api's .NET");
-                c.RoutePrefix = string.Empty; // Swagger s'ouvre sur la racine `/`
-            });
+            app.UseSwaggerUI();
+         
         }
 
         app.UseHttpsRedirection();
