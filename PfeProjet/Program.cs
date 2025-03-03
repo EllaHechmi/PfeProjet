@@ -13,6 +13,8 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
 
         // Add services to the container.
         builder.Services.AddControllers();
@@ -38,7 +40,6 @@ internal class Program
         {
             client.DefaultRequestHeaders.Add("Authorization", "Basic YOUR_ENCODED_TOKEN");
         });
-
         builder.Services.AddHttpClient<ReleasesService>(client =>
         {
             client.DefaultRequestHeaders.Add("Authorization", "Basic YOUR_ENCODED_TOKEN");
@@ -48,26 +49,36 @@ internal class Program
         {
             client.DefaultRequestHeaders.Add("Authorization", "Basic YOUR_ENCODED_TOKEN");
         });
-        // Configuration de MongoDB
-        builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("ConnectionString"));
-        // Enregistrement de MongoDbContext
-        builder.Services.AddSingleton<MongoDbContext>(sp =>
+        // MongoDB configuration
+        builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDB"));
+
+        // Register IMongoClient
+        builder.Services.AddSingleton<IMongoClient>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-
-            // Vérifiez que settings.ConnectionString n'est pas null
-            if (string.IsNullOrEmpty(settings.ConnectionString))
+            if (string.IsNullOrEmpty(settings.ConnectionUrl))
             {
-                throw new ArgumentNullException(nameof(settings.ConnectionString), "La chaîne de connexion MongoDB est manquante.");
+                throw new InvalidOperationException("MongoDB ConnectionUrl is not configured in appsettings.json");
             }
-
-            var client = new MongoClient(settings.ConnectionString);
-            return new MongoDbContext(client, settings.DatabaseName);
+            Console.WriteLine($"MongoDB Connection URL: {settings.ConnectionUrl}");
+            return new MongoClient(settings.ConnectionUrl);
         });
 
+        // Register MongoDbContext
+        builder.Services.AddSingleton<MongoDbContext>(sp =>
+        {
+            var client = sp.GetRequiredService<IMongoClient>();
+            var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
 
+            if (string.IsNullOrEmpty(settings.DatabaseName))
+            {
+                throw new InvalidOperationException("MongoDB DatabaseName is not configured in appsettings.json");
+            }
+
+            Console.WriteLine($"MongoDB Database Name: {settings.DatabaseName}");
+            return new MongoDbContext(client, settings.DatabaseName);
+        });
         var app = builder.Build();
-
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
