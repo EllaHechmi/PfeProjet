@@ -57,6 +57,18 @@ namespace PfeProjet.Controllers
             return BadRequest(result); 
         }
 
+        // get pipelines by id from db 
+
+        [HttpGet("{pipelineId}")]
+        public async Task<IActionResult> GetPipelineByIdFromDb(int pipelineId)
+        {
+            var pipeline = await _pipelinesService.GetPipelineByIdFromDbAsync(pipelineId);
+            if (pipeline == null)
+            {
+                return NotFound("Pipeline not found.");
+            }
+            return Ok(pipeline);
+        }
 
     }
 }

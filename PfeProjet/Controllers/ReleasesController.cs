@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PfeProjet.Models;
 using PfeProjet.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -57,7 +58,31 @@ namespace PfeProjet.Controllers
              
             return BadRequest(result);
 }
+        [HttpGet("get-releases-fromDB")]
+        public async Task<ActionResult<List<Release>>> GetAllReleasesFromMongo()
+        {
+            var releases = await _releasesService.GetAllReleasesFromMongoAsync();
 
+            if (releases == null || releases.Count == 0)
+            {
+                return NotFound("No releases found in the database.");
+            }
+
+            return Ok(releases);
+        }
+        //get release fom db by id
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Release>> GetReleaseById(int id)
+        {
+            var release = await _releasesService.GetReleaseByIdFromDbAsync(id);
+
+            if (release == null)
+            {
+                return NotFound($"Release with ID {id} not found.");
+            }
+
+            return Ok(release);
+        }
 
     }
 }

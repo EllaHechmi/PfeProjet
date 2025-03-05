@@ -14,5 +14,7 @@ namespace PfeProjet
             }
 
             public IMongoCollection<Pipeline> Pipelines => _database.GetCollection<Pipeline>("Pipelines");
-        }
+        public IMongoCollection<Release> Releases => _database.GetCollection<Release>("Releases");
+        public IMongoCollection<AgentPool> AgentPools => _database.GetCollection<AgentPool>("AgentPools");
+    }
 }

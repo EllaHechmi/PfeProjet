@@ -176,5 +176,21 @@ namespace PfeProjet.Services
                 return $"Error: {ex.Message}";
             }
         }
+        //get pipelines by id from mongo db
+
+        public async Task<Pipeline> GetPipelineByIdFromDbAsync(int pipelineId)
+        {
+            try
+            {
+                var filter = Builders<Pipeline>.Filter.Eq(p => p.Id, pipelineId);
+                return await _pipelinesCollection.Find(filter).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching pipeline from MongoDB: {ex.Message}");
+                throw;
+            }
+        }
+
     }
 }
