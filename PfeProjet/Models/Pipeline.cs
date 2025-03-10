@@ -9,5 +9,7 @@
         public string Project { get; set; }
         public string Organization { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public List<PipelineTask> Tasks { get; set; } = new List<PipelineTask>();
     }
 }
